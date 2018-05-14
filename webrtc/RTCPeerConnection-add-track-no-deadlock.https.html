@@ -1,0 +1,25 @@
+<!doctype html>
+<meta charset=utf-8>
+<title>PeerConncetion addTrack does not deadlock</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>
+  'use strict';
+
+  // This test sets up two peer connections using a sequence of operations
+  // that triggered a deadlock in Chrome. See https://crbug.com/736725.
+  // If a deadlock is introduced again, this test times out.
+  promise_test(async t => {
+    const pc1 = new RTCPeerConnection();
+    const stream = await navigator.mediaDevices.getUserMedia(
+      {audio: true, video: true});
+    const videoTrack = stream.getVideoTracks()[0];
+    pc1.addTrack(videoTrack, stream);
+    const offer = await pc1.createOffer();
+    pc1.setLocalDescription(offer);
+    const pc2 = new RTCPeerConnection();
+    pc2.setRemoteDescription(pc1.localDescription);
+    pc2.addTrack(videoTrack, stream);
+    pc2.createAnswer();
+  }, 'PeerConnection addTrack does not deadlock.');
+</script>
