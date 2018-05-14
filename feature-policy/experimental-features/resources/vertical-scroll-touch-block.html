@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<style>
+body, div, html {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+p {
+  margin-bottom: 1000px;
+  margin-right: 1000px;
+}
+</style>
+<body>
+  <div id="blocker">
+    <p>This page blocks 'touchstart' and 'touchmove'.</p>
+  </div>
+  <script>
+    function doSomethingUnimportant(e) {
+      return false !== e;
+    }
+
+    function preventDefault(e) {
+      e.preventDefault();
+    }
+
+    document.addEventListener("touchstart", doSomethingUnimportant, {passive: false});
+    document.addEventListener("touchmove", doSomethingUnimportant, {passive: false});
+
+    let blocker = document.getElementById("blocker");
+    function messageHandler(e) {
+      if (e.data.prevent) {
+        blocker.removeEventListener(e.data.event, doSomethingUnimportant);
+        blocker.addEventListener(e.data.event, preventDefault, {passive: false});
+      } else {
+        blocker.removeEventListener(e.data.event, preventDefault);
+        blocker.addEventListener(e.data.event, doSomethingUnimportant, {passive: false});
+      }
+      e.source.postMessage(e.data, "*");
+    }
+
+    window.addEventListener("message", messageHandler);
+  </script>
+</body>
